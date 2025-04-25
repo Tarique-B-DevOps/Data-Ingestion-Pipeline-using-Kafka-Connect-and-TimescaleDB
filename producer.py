@@ -2,6 +2,7 @@ import json
 import random
 import time
 import os
+from datetime import datetime, UTC
 from kafka import KafkaProducer
 
 # Configuration
@@ -14,13 +15,14 @@ producer = KafkaProducer(
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
 
-# Define schema
+# schema definition
 schema = {
     "type": "struct",
     "fields": [
         {"field": "id", "type": "int32"},
         {"field": "temperature", "type": "float"},
-        {"field": "humidity", "type": "float"}
+        {"field": "humidity", "type": "float"},
+        {"field": "timestamp", "type": "string"}
     ],
     "optional": False,
     "name": "iot_data"
@@ -32,7 +34,8 @@ def generate_sensor_data():
         "payload": {
             "id": random.randint(1, 100),
             "temperature": round(random.uniform(20.0, 35.0), 2),
-            "humidity": round(random.uniform(30.0, 70.0), 2)
+            "humidity": round(random.uniform(30.0, 70.0), 2),
+            "timestamp": datetime.now(UTC).isoformat()
         }
     }
 
