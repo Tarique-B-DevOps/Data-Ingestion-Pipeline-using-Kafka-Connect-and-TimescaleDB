@@ -11,7 +11,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     restart: always
     networks:
-      - datastreaming
+      - data-pipeline
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -27,20 +27,21 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT_REMOTE_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092,PLAINTEXT_REMOTE_HOST://localhost:29093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092,PLAINTEXT_REMOTE_HOST://timescaledb:29093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      TOPIC_NAME: ${TOPIC_NAME}
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server 127.0.0.1:9092 --describe --topic iotdata"]
-      interval: 20s
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server 127.0.0.1:9092 --describe --topic health"]
+      interval: 30s
       retries: 5
     restart: always
     networks:
-      - datastreaming
+      - data-pipeline
 
   schemaregistry:
     image: confluentinc/cp-schema-registry:latest
@@ -58,7 +59,7 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
     restart: always
     networks:
-      - datastreaming
+      - data-pipeline
 
   kafkaconnect:
     image: confluentinc/cp-kafka-connect:latest
@@ -90,7 +91,7 @@ services:
       AWS_SECRET_ACCESS_KEY: "x"
     restart: always
     networks:
-      - datastreaming
+      - data-pipeline
 
   timescaledb:
     image: timescale/timescaledb:latest-pg14
@@ -98,7 +99,7 @@ services:
     hostname: timescaledb
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: timeseries
     ports:
       - "5432:5432"
@@ -106,11 +107,27 @@ services:
       - timescaledb_data:/var/lib/postgresql/data
     restart: always
     networks:
-      - datastreaming
+      - data-pipeline
+
+  # Optional
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    hostname: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: tarique@email.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - timescaledb
+    restart: always
+    networks:
+      - data-pipeline    
 
 volumes:
   timescaledb_data:
 
 networks:
-  datastreaming:
+  data-pipeline:
     driver: bridge
