@@ -2,6 +2,8 @@ import json
 import os
 from kafka import KafkaConsumer
 
+# This script consumes messages directly from a Kafka topic.
+
 # Configuration
 KAFKA_BROKER = 'localhost:29092'
 TOPIC = os.getenv('KAFKA_TOPIC', 'sensor_data')

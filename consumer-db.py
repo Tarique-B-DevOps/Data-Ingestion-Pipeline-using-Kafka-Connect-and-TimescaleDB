@@ -2,6 +2,8 @@ import os
 import psycopg2
 import time
 
+# This script consumes messages from TimescaleDB table.
+
 DB_NAME = os.getenv("PGDATABASE", "timeseries")
 DB_USER = os.getenv("PGUSER", "postgres")
 DB_PASSWORD = os.getenv("PGPASSWORD", "postgres")
