@@ -2,6 +2,10 @@
 
 This project sets up a data ingestion pipeline using Kafka, Kafka Connect, and TimescaleDB. It allows you to stream data from Kafka topics into TimescaleDB and process it in real-time.
 
+## Setting Up and Testing Environment
+
+This section walks through setting up the Docker-based stack and verifying ingestion using Kafka and TimescaleDB.
+
 ### 1 - Spin up Docker Compose Stack
 
 Start the entire stack by running:
@@ -98,3 +102,46 @@ SELECT * FROM sensor_data LIMIT 10;
 
 This will allow you to verify the data inserted into your TimescaleDB.
 
+## Stream and Consume Ingested Data in Real-Time
+
+To test the ingestion pipeline using Python scripts in real-time, follow these steps:
+
+1. **Create and activate a virtual environment**
+
+    ```bash
+    python3 -m venv venv
+    ```
+    ```bash  
+    source venv/bin/activate
+    ```
+
+2. **Install required dependencies**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3. **Run the producer**
+
+    Start the data producer which sends random sensor data to the Kafka topic:
+
+    ```bash
+    python3 producer.py
+    ```
+
+4. **Run the Kafka topic consumer**
+
+    In a new terminal tab, run the consumer to verify messages are received directly from the Kafka topic:
+
+    ```bash
+    python3 consumer.py
+    ```
+
+5. **Run the TimescaleDB consumer**
+
+    In another terminal tab, run the DB consumer to verify ingested data from the TimescaleDB:
+
+    ```bash
+    python3 consumer-db.py
+    ```
+This setup helps validate both Kafka ingestion and TimescaleDB storage in real-time.
